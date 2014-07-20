@@ -8,6 +8,7 @@ import android.widget.SeekBar;
 @SuppressLint("ClickableViewAccessibility")
 public class AccurateSeekBar extends SeekBar {
 
+	private final float THRESHOLD_MULTIPLIER = 2;
 	private float lastXPosition;
 	
 	public AccurateSeekBar(Context context) {
@@ -24,11 +25,10 @@ public class AccurateSeekBar extends SeekBar {
 
 	@Override
 	public boolean onTouchEvent(MotionEvent event) {
+		boolean shouldTrackNormal = Math.abs(event.getY()) < ((float)this.getHeight() * THRESHOLD_MULTIPLIER);
         switch (event.getAction()) {
 	        case MotionEvent.ACTION_MOVE:
-	    		if (Math.abs(event.getY()) < (this.getHeight() * 2)) {
-	        		this.setProgress((int)(this.getMax() * (float)(event.getX() / ((float)this.getWidth() - 1))));
-	    		} else {
+	    		if (!shouldTrackNormal) {
 	        		float trackingHorizontalDistance = event.getX() - this.lastXPosition;
 	        		float valuePerPixel = (float)this.getMax() / (float)this.getWidth();
 	        		float valueDivisor = Math.abs(event.getY()) / (float)this.getHeight();
@@ -38,7 +38,7 @@ public class AccurateSeekBar extends SeekBar {
 	            break;
         }
         this.lastXPosition = event.getX();
-        return true;
+        return shouldTrackNormal ? super.onTouchEvent(event) : true;
 	}
 	
 }
